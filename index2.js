@@ -9,26 +9,32 @@ app.use(bodyParser.json());
 const port = 3000;
 
 const llamaPath = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
-const model = new ChatLlamaCpp({ modelPath: llamaPath, gpuLayers: 22, n_gpu_layers: 12, n_batch: 512, streaming: true, runManager: {
+const model = new ChatLlamaCpp({ modelPath: llamaPath, gpuLayers: 20, /*n_gpu_layers: 12, n_batch: 512, streaming: true, runManager: {
   handleLLMNewToken(token){
     process.stdout.write(token)
     console.log(token)
   },
-}})
+}*/})
 
 app.post('/chat', async (req, res) => {
-    console.log(new Date().getMinutes())
+  console.log(new Date())
     const postData = req.body
     console.log(req.body)
-    res.send('String received');
+    // res.send('String received');
+    res.writeHead(200, {
+      'Content-Type': 'text/plain',
+      'Transfer-Encoding': 'chunked'
+    });
     let concatenatedTokens = ""
     const stream = await model.stream([new HumanMessage({ content: postData.question }),])
     for await (const chunk of stream) {
       concatenatedTokens += chunk.content
       console.log(concatenatedTokens)
+      res.write(chunk.content);
     }
-    console.log(new Date().getMinutes())
-    console.log(response)
+    res.end();
+    console.log(new Date())
+    // console.log(concatenatedTokens)
 })
   
 app.listen(port, () => {
