@@ -2,10 +2,12 @@ import { ChatLlamaCpp } from "@langchain/community/chat_models/llama_cpp";
 import { HumanMessage } from "@langchain/core/messages";
 import bodyParser from "body-parser"
 import express from "express"
+import cors from "cors"
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cors())
 const port = 3000;
 
 const llamaPath = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
@@ -16,7 +18,24 @@ const model = new ChatLlamaCpp({ modelPath: llamaPath, gpuLayers: 20, /*n_gpu_la
   },
 }*/})
 
+let isStreaming = false
+
+/* 
+middleware
+app.use((req, res, next) => {
+  if (isStreaming) {
+    // If streaming is in progress, ignore the request
+    res.status(400).send('Streaming in progress. Please wait.');
+  } else {
+    // If streaming is not in progress, proceed with the request
+    next();
+  }
+})
+*/
+
 app.post('/chat', async (req, res) => {
+  if(isStreaming) return res.status(400).send('Streaming in progress. Please wait.')
+  isStreaming = true
   console.log(new Date())
     const postData = req.body
     console.log(req.body)
@@ -32,7 +51,8 @@ app.post('/chat', async (req, res) => {
       console.log(concatenatedTokens)
       res.write(chunk.content);
     }
-    res.end();
+    res.end()
+    isStreaming = false
     console.log(new Date())
     // console.log(concatenatedTokens)
 })
