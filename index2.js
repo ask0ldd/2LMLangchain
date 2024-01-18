@@ -11,7 +11,9 @@ app.use(cors())
 const port = 3000;
 
 const llamaPath = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
-const model = new ChatLlamaCpp({ modelPath: llamaPath, gpuLayers: 20, /*n_gpu_layers: 12, n_batch: 512, streaming: true, runManager: {
+// const llamaPath = "g:/AI/zyte-1B-q8_0.gguf";
+// const llamaPath = "g:/AI/phi-2.Q5_K_M.gguf";
+const model = new ChatLlamaCpp({ modelPath: llamaPath, threads:3, contextSize:1024, /*batchSize:512,*/ gpuLayers: 18 /* 20 */, maxTokens : 100, f16Kv:true, /*n_gpu_layers: 12, n_batch: 512, streaming: true, runManager: {
   handleLLMNewToken(token){
     process.stdout.write(token)
     console.log(token)
