@@ -1,8 +1,12 @@
 import { ChatLlamaCpp } from "@langchain/community/chat_models/llama_cpp";
+import { LlamaCppEmbeddings } from "@langchain/community/embeddings/llama_cpp";
 import { HumanMessage } from "@langchain/core/messages";
 import bodyParser from "body-parser"
 import express from "express"
 import cors from "cors"
+import { LlamaContext } from "node-llama-cpp";
+import { LlamaChatSession } from "node-llama-cpp";
+import { LlamaChatPromptWrapper } from "node-llama-cpp";
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -10,15 +14,18 @@ app.use(bodyParser.json());
 app.use(cors())
 const port = 3000;
 
-const llamaPath = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
-// const llamaPath = "g:/AI/zyte-1B-q8_0.gguf";
-// const llamaPath = "g:/AI/phi-2.Q5_K_M.gguf";
-const model = new ChatLlamaCpp({ modelPath: llamaPath, threads:3, contextSize:1024, /*batchSize:512,*/ gpuLayers: 18 /* 20 */, maxTokens : 100, f16Kv:true, /*n_gpu_layers: 12, n_batch: 512, streaming: true, runManager: {
-  handleLLMNewToken(token){
-    process.stdout.write(token)
-    console.log(token)
-  },
-}*/})
+const mistral7bInstruct = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
+const mixtral11b2Path = "g:/AI/mixtral_11bx2_moe_19b.Q4_K_M.gguf";
+const model = new ChatLlamaCpp({ modelPath: mistral7bInstruct, temperature:0.1, threads:3, contextSize:2048, batchSize:512, gpuLayers: 14 /* 18 */, maxTokens : 100, f16Kv:true,})
+
+/*const model = new LlamaModel({
+  modelPath: path.join("g:/", "AI", "codellama-13b.Q3_K_M.gguf")
+})
+const context = new LlamaContext({model, threads: 3, contextSize:2048, batchSize:512, embedding: true});
+const session = new LlamaChatSession({
+    context,
+    promptWrapper: new LlamaChatPromptWrapper()
+})*/
 
 let isStreaming = false
 
