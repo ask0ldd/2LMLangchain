@@ -1,12 +1,14 @@
 import { ChatLlamaCpp } from "@langchain/community/chat_models/llama_cpp";
 import { LlamaCppEmbeddings } from "@langchain/community/embeddings/llama_cpp";
+// import {HtmlToTextTransformer} from "@langchain/community/document_transformers/html_to_text"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import bodyParser from "body-parser"
 import express from "express"
 import cors from "cors"
-import { LlamaContext } from "node-llama-cpp";
+/*import { LlamaContext } from "node-llama-cpp";
 import { LlamaChatSession } from "node-llama-cpp";
-import { LlamaChatPromptWrapper } from "node-llama-cpp";
+import { LlamaChatPromptWrapper } from "node-llama-cpp";*/
+// model_kwargs={"device":"cuda"}
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,7 +18,7 @@ const port = 3000;
 
 const mistral7bInstruct = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
 const mixtral11b2 = "g:/AI/mixtral_11bx2_moe_19b.Q4_K_M.gguf";
-const model = new ChatLlamaCpp({ modelPath: mixtral11b2, temperature:0.1, threads:3, contextSize:2048, batchSize:512, gpuLayers: 14 /* 18 */, maxTokens : 100, f16Kv:true,})
+const model = new ChatLlamaCpp({ modelPath: mixtral11b2, temperature:0.1, threads:3, contextSize:2048, batchSize:512, gpuLayers: 14 /* 18 */, maxTokens : 100, f16Kv:true/*, embedding:true*/})
 
 /*const model = new LlamaModel({
   modelPath: path.join("g:/", "AI", "codellama-13b.Q3_K_M.gguf")
@@ -54,7 +56,7 @@ app.post('/chat', async (req, res) => {
       'Transfer-Encoding': 'chunked'
     });
     let concatenatedTokens = ""
-    const stream = await model.stream([new SystemMessage({content : "You are a helpful assistant."}), new HumanMessage({ content: postData.question }),])
+    const stream = await model.stream([new SystemMessage({content : "You are a helpful assistant."}), new HumanMessage({ content: postData.question })])
     for await (const chunk of stream) {
       concatenatedTokens += chunk.content
       console.log(concatenatedTokens)
