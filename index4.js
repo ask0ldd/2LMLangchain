@@ -58,6 +58,7 @@ const text = fs.readFileSync("g:/AI/bestband.txt", "utf8")
 const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000 })
 const docs = await textSplitter.createDocuments([text])
 const embeddings = new LlamaCppEmbeddings({ modelPath: mistral7bInstruct, embedding: true, })
+console.log(embeddings)
 const vectorStore = await HNSWLib.fromDocuments(docs, embeddings)
 const vectorStoreRetriever = vectorStore.asRetriever()
 
