@@ -7,7 +7,8 @@
     "express": "^4.18.2",
     "hnswlib-node": "^1.4.2",
     "langchain": "^0.1.2",
-    "node-llama-cpp": "^2.8.3"
+    "node-llama-cpp": "^3.0.0-beta.5",
+    "pdf-parse": "^1.1.1"
   },
   "type": "module"
 }

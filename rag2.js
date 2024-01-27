@@ -1,5 +1,6 @@
 import { ChatLlamaCpp } from "@langchain/community/chat_models/llama_cpp"
 import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf"
+import { LlamaCppEmbeddings } from "@langchain/community/embeddings/llama_cpp"
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
 import { HNSWLib } from "@langchain/community/vectorstores/hnswlib"
 import { formatDocumentsAsString } from "langchain/util/document"
@@ -30,13 +31,21 @@ async function webPageToSplitDocs(url){
 
 }
 
+async function saveToFaissVecStore(){
+
+}
+
 const docs = await fileToSplitDocs("g:/AI/state_of_the_union.txt")
-const docs2 = await fileToSplitDocs("g:/AI/montecristo-chapter1.txt")
-const docs3 = await pdfToSplitDocs("g:/AI/llamaPaper.pdf")
+/*const docs2 = await fileToSplitDocs("g:/AI/montecristo-chapter1.txt")
+const docs3 = await pdfToSplitDocs("g:/AI/llamaPaper.pdf")*/
+// bge-base-en-v1.5.bin
 
-const embeddings = new HuggingFaceInferenceEmbeddings({model : "BAAI/bge-base-en-v1.5"}) // "all-MiniLM-L6-v2"
 
-const vectorStore = await HNSWLib.fromDocuments(docs.concat(docs2)/*.concat(docs3)*/, embeddings)
+// const embeddings = new HuggingFaceInferenceEmbeddings({model : "BAAI/bge-base-en-v1.5"}) // "all-MiniLM-L6-v2"
+const embeddings = new LlamaCppEmbeddings({modelPath:"g:/AI/phi-2.Q5_K_M.gguf", threads:3})
+
+
+const vectorStore = await HNSWLib.fromDocuments(docs/*.concat(docs2).concat(docs3)*/, embeddings)
 const vectorStoreRetriever = vectorStore.asRetriever()
 
 const model = new ChatLlamaCpp({ 
@@ -48,7 +57,8 @@ const model = new ChatLlamaCpp({
     batchSize:1024,
     gpuLayers: 16, 
     maxTokens : 2048, 
-    f16Kv:true/*, embedding:true*/
+    f16Kv:true,
+    embedding:true
 })
 
 const SYSTEM_TEMPLATE = `Use the following pieces of context to answer the question at the end.
