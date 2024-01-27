@@ -6,6 +6,7 @@ import { formatDocumentsAsString } from "langchain/util/document";
 import { RunnablePassthrough, RunnableSequence, } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import * as fs from "fs";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import {
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -14,13 +15,31 @@ import {
 
 const mistral7bInstruct = "g:/AI/mistral-7b-instruct-v0.1.Q5_K_M.gguf";
 
-const text = fs.readFileSync("g:/AI/state_of_the_union.txt", "utf8")
-const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000 })
-const docs = await textSplitter.createDocuments([text])
+async function fileToSplitDocs(filename){
+  const text = fs.readFileSync(filename, "utf8")
+  const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: 1500, chunkOverlap: 200, separators : ' ' })
+  const docs = await textSplitter.createDocuments([text])
+  return docs
+}
+
+async function pdfToSplitDocs(filename){
+  const loader = new PDFLoader(filename, {
+    parsedItemSeparator: " ",
+  });
+  const docs = await loader.load();
+  return docs
+}
+
+async function webPageToSplitDocs(url){
+
+}
+
+const docs = await fileToSplitDocs("g:/AI/state_of_the_union.txt")
+const docs2 = await fileToSplitDocs("g:/AI/montecristo-chapter1.txt")
 
 const embeddings = new HuggingFaceInferenceEmbeddings({model : "BAAI/bge-base-en-v1.5"}) // "all-MiniLM-L6-v2"
 
-const vectorStore = await HNSWLib.fromDocuments(docs, embeddings)
+const vectorStore = await HNSWLib.fromDocuments(docs.concat(docs2), embeddings)
 const vectorStoreRetriever = vectorStore.asRetriever()
 
 const model = new ChatLlamaCpp({ 
@@ -30,7 +49,7 @@ const model = new ChatLlamaCpp({
     contextSize:2048, 
     batchSize:2048, 
     gpuLayers: 16, 
-    maxTokens : 100, 
+    maxTokens : 1000, 
     f16Kv:true/*, embedding:true*/
 })
 
@@ -54,13 +73,18 @@ const chain = RunnableSequence.from([
     new StringOutputParser(),
 ])
 
-/*const answer = await chain.invoke( "which american forces have been mobilized to protect the NATO countries?" )
-  
-console.log({ answer });*/
+const questions = {
+  barrels : "how many barrels of petroleum will be released by america?",
+  mobilization : "which american forces have been mobilized to protect the NATO countries?",
+  banks : "what is happening to russian's banks?",
+  financial : "what is happening to russian's financial actors?",
+  monte : "how much time will it takes to get back to sea after emptying the cargo?",
+  monte2 : "who has to carry a packet and a letter for Leclere?",
+}
 
-const answer2 = await chain.invoke( "how many barrels of petroleum will be released by america?" )
+const answer = await chain.invoke(questions.monte2)
   
-console.log({ answer2 });
+console.log({ answer });
 
 
 
